@@ -11,7 +11,6 @@ function reportState(run) {
     el("p", {}, run.status === "queued" ? "后台正在处理，页面会自动更新。" : run.failure || run.result?.summary),
     run.status === "done" ? el("a", {class: "button", href: `#evidence/${run.id}`}, "查看业务证据") : null);
 }
-
 export async function runsPage(config, route, signal) {
   const items = await api.runs();
   const latest = route.id ? await api.run(route.id, signal) : items[0];
@@ -32,7 +31,7 @@ export async function runsPage(config, route, signal) {
   }
   if (latest?.status === "queued") poll(refresh, signal);
   return el("div", {class: "page"},
-    pageHeading(config.modules[2], config.parameter_label),
+    pageHeading(config.modules[3], config.parameter_label),
     latest ? section(latest.case_title, detail) : detail,
     section("执行批次", items.length ? table(["资料", "编号", "参数", "状态", "提交时间"],
       items.map(run => [el("a", {"data-run": run.id, href: `#runs/${run.id}`}, run.case_title), run.id,

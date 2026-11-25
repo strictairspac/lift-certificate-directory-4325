@@ -23,8 +23,8 @@ export async function evidencePage(config, user, route) {
   const runs = (await api.runs()).filter(item => item.status === "done");
   const run = route.id ? await api.run(route.id) : runs[0];
   if (!run?.result) return el("div", {class: "page"},
-    pageHeading(config.modules[3], null), empty("成功执行一个批次后可以查看、签核和下载证据。"),
-    el("a", {href: "#runs"}, config.modules[2]));
+    pageHeading(config.modules[4], null), empty("成功执行一个批次后可以查看、签核和下载证据。"),
+    el("a", {href: "#runs"}, config.modules[3]));
 
   const review = await api.review(run.id);
   const issue = errorText();
@@ -46,7 +46,7 @@ export async function evidencePage(config, user, route) {
     location.hash = `evidence/${event.target.value}`;
   }}, runs.map(item => el("option", {value: item.id, selected: item.id === run.id}, `#${item.id} ${item.case_title}`)));
   return el("div", {class: "page evidence"},
-    pageHeading(config.modules[3], run.case_title, button),
+    pageHeading(config.modules[4], run.case_title, button),
     issue, options,
     el("section", {class: "feature evidence-summary"}, el("div", {}, el("h2", {}, "批次判定"), el("p", {}, run.result.summary)),
       el("details", {}, el("summary", {}, "证据摘要"), el("code", {}, run.digest))),

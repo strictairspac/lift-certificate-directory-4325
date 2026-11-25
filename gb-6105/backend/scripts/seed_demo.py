@@ -3,12 +3,14 @@ from sqlalchemy import func, select
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-from migrations.v001_workbench import upgrade
+from migrations.v001_workbench import upgrade as upgrade_v1
+from migrations.v002_transfer import upgrade as upgrade_v2
 from src.config.resources import engine
 from src.config.settings import DEMO_PASSWORD
 from src.constants.roles import Role
-from src.domain.scenario import FIXTURES
+from src.domain.scenario import CERTIFICATES, FIXTURES
 from src.models.cases import cases
+from src.models.transfers import dossier_certificates, dossiers
 from src.models.users import users
 from src.utils.passwords import hash_password
 
@@ -23,7 +25,30 @@ def insert_new(db, table, key, values):
 
 def setup_schema():
     with engine.begin() as db:
-        upgrade(db)
+        upgrade_v1(db)
+        upgrade_v2(db)
+
+
+def seed_dossiers(db):
+    """两份演示卷宗：东卷 5 件、西卷 4 件，上限均为 6（留 1 个空位便于观察）。"""
+    demo_dossiers = [
+        {"code": "DOS-EAST", "title": "东廊资质卷宗", "capacity": 6, "created_by": "seed"},
+        {"code": "DOS-WEST", "title": "西廊资质卷宗", "capacity": 6, "created_by": "seed"},
+    ]
+    for entry in demo_dossiers:
+        insert_new(db, dossiers, "code", entry)
+    rows = db.execute(select(dossiers.c.id, dossiers.c.code)).mappings().all()
+    ids = {row["code"]: row["id"] for row in rows}
+    east_id, west_id = ids["DOS-EAST"], ids["DOS-WEST"]
+    # 东卷收前 5 件，西卷收后 4 件，编号互不重叠。
+    holdings = [(east_id, CERTIFICATES[:5]), (west_id, CERTIFICATES[5:])]
+    for owner_id, records in holdings:
+        for record in records:
+            insert_new(db, dossier_certificates, "code", {
+                "code": record.code, "lift": record.lift,
+                "expires_on": record.expires_on.isoformat(),
+                "revoked": "1" if record.revoked else "0", "owner_id": owner_id,
+            })
 
 
 def seed():
@@ -36,7 +61,9 @@ def seed():
                 })
         for fixture in FIXTURES:
             insert_new(db, cases, "code", {**fixture, "created_by": "seed"})
-        return {table.name: db.scalar(select(func.count()).select_from(table)) for table in (users, cases)}
+        seed_dossiers(db)
+        tables = (users, cases, dossiers, dossier_certificates)
+        return {table.name: db.scalar(select(func.count()).select_from(table)) for table in tables}
 
 
 if __name__ == "__main__":

@@ -12,4 +12,11 @@ export const api = {
   submitReview: (id, data) => request(`/runs/${id}/review`, {method: "POST", data}),
   export: id => request(`/runs/${id}/export`, {raw: true}),
   audit: () => request("/audit", {signal: AbortSignal.timeout(5000)}),
+  dossiers: () => request("/transfers/dossiers"),
+  transferOrders: () => request("/transfers/orders"),
+  transferOrder: id => request(`/transfers/orders/${id}`),
+  createTransfer: data => request("/transfers/orders", {method: "POST", data}),
+  verifyTransfer: (id, reviewDate) =>
+    request(`/transfers/orders/${id}/verification?review_date=${encodeURIComponent(reviewDate)}`),
+  pointCheck: data => request("/transfers/point-check", {method: "POST", data}),
 };

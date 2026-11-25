@@ -98,6 +98,11 @@ td a[aria-current=true] { font-weight: 750; }
 .evidence select { width: fit-content; max-width: 100%; }
 .signature { border-left: .2rem solid var(--accent); padding-left: .85rem; }
 .signature p { margin: .35rem 0; overflow-wrap: anywhere; }
+.transfers .split { grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); }
+.transfer-form, .point-check-form { display: grid; gap: .85rem; margin: 1rem 0; }
+.capacity-line { margin-top: .6rem; font-weight: 650; color: var(--accent); }
+.point-check-output, .verification { display: grid; gap: .9rem; margin-top: .5rem; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .82rem; }
 @media (max-width: 1050px) {
   .shell { grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr); }
   .split { grid-template-columns: 1fr; }
